@@ -12,8 +12,9 @@ export default function Home() {
 
   const [todos, setTodos] = useState<TODO[]>([]);
   const [todo, setTodo] = useState<string>('');
+  const [editedTodo, setEditedTodo] = useState<string>('')
   const [error, setError] = useState<string>('');
-  const [edit, setEdit] = useState<boolean>(false);
+  const [currentEdit, setCurrentEdit] = useState<string>('');
   
   const addTodo = () => {
     if(todo.length > 0) {
@@ -28,6 +29,19 @@ export default function Home() {
       setError("Please enter a todo first");
     }
     
+  }
+
+  const addEditedTodo = () => {
+    if (editedTodo.trim() !== '') {
+      setTodos((prevTodos) =>
+        prevTodos.map((element) =>
+          element.id === currentEdit
+            ? { ...element, description: editedTodo }
+            : element
+        )
+      );
+    }
+    setCurrentEdit('');
   }
 
   return (
@@ -54,18 +68,31 @@ export default function Home() {
           <div key={task.id} className='border-2 w-[70%] mt-2 rounded-lg '>
             <p><small>{task.time.toLocaleDateString()}</small></p>
             <span className='flex'>
-              {edit ? 
+              {task.id === currentEdit ? 
                 (
                  <>
-                   <input className='border-2 rounded-lg h-8 mr-2 ml-2' placeholder={`${task.description}...`}/>
+                   <input 
+                   className='border-2 rounded-lg h-8 mr-2 ml-2' 
+                   placeholder={`${task.description}...`}
+                   onChange ={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setEditedTodo(e.target.value);
+                }}
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>  {
+                  if(e.key === "Enter") {
+                    addEditedTodo();
+                  }
+              }}/>
                    <button 
                    className='mr-5 mb-3 border-2 hover:bg-slate-200 rounded-lg font-bold text-lg pl-3 pr-3 '
-                   >
+                   onClick={() => {
+                    addEditedTodo()
+                  }}
+                  >
                     Save
                     </button>
                    <button  
                    className='mb-3 border-2 hover:bg-slate-200 rounded-lg font-bold text-lg pl-3 pr-3'
-                   onClick={() => setEdit(false)}>
+                   onClick={() => setCurrentEdit('')}>
                     Cancel
                     </button>
                  </>
@@ -76,7 +103,7 @@ export default function Home() {
                   <p className='mr-20 w-[40%] mw-[40%] overflow-x-auto whitespace-pre-wrap ml-2'>{task.description}</p>
                   <button 
                    className='mr-5 mb-3 border-2 hover:bg-slate-200 rounded-lg font-bold text-lg pl-3 pr-3 '
-                   onClick={() => setEdit(!edit)}>
+                   onClick={() => setCurrentEdit(task.id)}>
                     Edit
                   </button>
                   <button 
